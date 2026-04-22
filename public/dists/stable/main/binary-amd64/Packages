@@ -1,5 +1,228 @@
 Package: sbk
 Priority: optional
+Installed-Size: 4017
+Maintainer: MelanX
+Architecture: amd64
+Version: 0.3.0-1
+Filename: pool/main/s/sbk/sbk_0.3.0-1_amd64.deb
+Size: 1374300
+MD5sum: 864f2a5efdb8c4683862d7e6f5c59505
+SHA1: 580420d5b0874e5e5b565a7f831f182d81f77c82
+SHA256: 2d07d3a8faee8c1aadb4a143d209855d9c8dc41e246eb890e01b4c607ad38770
+SHA512: 0f78e49f4e6628430dccf1419a163471cef7e2bb726fd9f9882ac6bfe57d58a31d4d6eb1b0bbc3f38856513583b3d66484d304a20b8c723ddc9026a0a5fa1540
+Description: Fast, format-aware archiver for Minecraft worlds — preprocesses MCA, NBT, and
+ JSON files before LZMA2/ZSTD solid compression
+ # SimpleBackups Kompressor - SBK
+ .
+ A format-aware archiver for Minecraft worlds. `sbk` understands Minecraft's
+ internal file formats and preprocesses them before compression, achieving
+ significantly better ratios than generic archivers like `zip` or `7z`.
+ .
+ ## Why sbk?
+ .
+ Generic archivers treat world files as opaque blobs. `sbk` doesn't:
+ .
+ - **MCA region files** — strips per-chunk zlib/zstd compression, reorders
+ chunks along a Hilbert curve for better spatial locality, then feeds the raw
+ NBT stream into the compressor
+ - **NBT files** (`.dat`, `.dat_old`) — strips the outer gzip wrapper, stores
+ raw NBT
+ - **JSON files** — minifies before compression
+ - All files are grouped by type and compressed together as solid archives
+ (LZMA2 or Zstd), maximizing cross-file redundancy
+ .
+ The result: roughly **40–55% of original size** vs. **70–77%** for zip/7z
+ on typical Minecraft worlds.
+ .
+ ## Benchmarks
+ .
+ Tested on Minecraft 1.21.1 worlds, AMD Ryzen 7 7800X3D, 16 threads:
+ .
+ | World size | sbk -l 9 | 7z -mx=9 | zip -9 |
+ |-----------:|---------:|---------:|-------:|
+ |    12.7 MB |    20.1% |    44.2% |  51.4% |
+ |   129.3 MB |    39.1% |    68.5% |  72.9% |
+ |   493.3 MB |    43.6% |    73.0% |  76.2% |
+ |    1.02 GB |    44.7% |    74.1% |  77.0% |
+ |    1.78 GB |    41.9% |    72.5% |  77.4% |
+ .
+ See [BENCHMARK.md](BENCHMARK.md) for full results, including compression and
+ decompression times.
+ .
+ ## Installation
+ .
+ ```bash
+ curl -fsSL https://repo.chaotictrials.de/apt-keyring.gpg \
+   | sudo tee /usr/share/keyrings/chaotictrials.gpg > /dev/null
+ echo "deb [signed-by=/usr/share/keyrings/chaotictrials.gpg]
+ https://repo.chaotictrials.de/ stable main" \
+   | sudo tee /etc/apt/sources.list.d/chaotictrials.list
+ sudo apt update
+ sudo apt install sbk
+ ```
+ .
+ Alternatively, download the `.deb` directly from the
+ [Releases](https://github.com/ChaoticTrials/sbk/releases) page.
+ .
+ Or install via `cargo`:
+ .
+ ```bash
+ cargo install sbk
+ ```
+ .
+ Or build from source:
+ .
+ ```bash
+ cargo build --release
+ # binary at: target/release/sbk
+ ```
+ .
+ ## Usage
+ .
+ ### Compress a world
+ .
+ ```bash
+ sbk compress <world_dir> [OPTIONS]
+ ```
+ .
+ | Option                   | Default           | Description                   
+                          |
+ |--------------------------|-------------------|---------------------------------------------------------|
+ | `-o, --output <FILE>`    | `<world_dir>.sbk` | Output archive path           
+                          |
+ | `-t, --threads <N>`      | logical CPU count | Worker threads                
+                          |
+ | `-l, --level <1–9>`      | `9`               | Compression level           
+                            |
+ | `-a, --algorithm <ALG>`  | `lzma2`           | Compression algorithm: `lzma2`
+ or `zstd`                |
+ | `--max-age <MS>`         | —                 | Skip files not modified in
+ the last N ms                |
+ | `--since <TIMESTAMP>`    | —                 | Skip files with mtime below
+ Unix timestamp (ms)         |
+ | `--exclude <PATTERN>…`   | —                 | Exclude files matching
+ glob patterns (repeatable)       |
+ | `--include <PATTERN>…`   | —                 | Include ONLY files
+ matching glob patterns (repeatable)  |
+ | `--include-session-lock` | off               | Include `session.lock`
+ (excluded by default)            |
+ | `-q, --quiet`            | off               | Suppress progress bars,
+ summary, and non-fatal warnings |
+ .
+ `--exclude` and `--include` are mutually exclusive.
+ .
+ #### Multi-pattern usage
+ .
+ Both flags accept one or more patterns in a single invocation. Three safe
+ forms:
+ .
+ ```bash
+ # 1. world_dir before the flag (most common)
+ sbk compress world_dir --exclude "*.zip" "*.dat_old"
+ .
+ # 2. Repeat the flag once per pattern
+ sbk compress world_dir --exclude "*.zip" --exclude "*.dat_old"
+ .
+ # 3. Use -- to separate world_dir from patterns when world_dir comes last
+ sbk compress --exclude "*.zip" "*.dat_old" -- world_dir
+ ```
+ .
+ ### Decompress
+ .
+ ```bash
+ sbk decompress <file.sbk> [-o <dir>] [-t <threads>]
+ ```
+ .
+ ### Extract specific files
+ .
+ ```bash
+ sbk extract <file.sbk> <pattern>... [-o <dir>]
+ ```
+ .
+ Patterns are glob expressions (e.g. `region/*.mca`, `level.dat`).
+ .
+ ### Show archive info
+ .
+ ```bash
+ sbk info <file.sbk> [--list]
+ ```
+ .
+ `--list` prints the full file manifest as a tree, with file type and size for
+ each entry.
+ .
+ ### Convert between SBK and standard archive formats
+ .
+ `sbk convert` works in both directions:
+ .
+ **SBK → zip / tar.gz / tar.xz**
+ .
+ ```bash
+ sbk convert <file.sbk> --to <format> [-o <output>] [-t <threads>] [-l <level>]
+ ```
+ .
+ ```bash
+ sbk convert world.sbk --to zip
+ sbk convert world.sbk --to tar.gz -o backup.tar.gz
+ sbk convert world.sbk --to tar.xz -l 9
+ ```
+ .
+ **zip / tar.gz / tar.xz → SBK**
+ .
+ ```bash
+ sbk convert <archive> [-o <output.sbk>] [-t <threads>] [-l <level>] [-a <algo>]
+ ```
+ .
+ ```bash
+ sbk convert world.zip
+ sbk convert world.tar.gz -o world.sbk
+ sbk convert world.tar.xz --algorithm zstd
+ ```
+ .
+ | Option                    | Default                           | Description  
+                                    |
+ |---------------------------|-----------------------------------|--------------------------------------------------|
+ | `--to <format>`           | auto (sbk when input is not .sbk) | Target
+ format: `zip`, `tar.gz`, `tar.xz`, `sbk`  |
+ | `-o, --output <FILE>`     | `<archive_stem>.<ext>`            | Output file
+ path                                 |
+ | `-t, --threads <N>`       | logical CPU count                 | Worker
+ threads                                   |
+ | `-l, --level <1–9>`       | `6`                               | Compression
+ level for the output format          |
+ | `-a, --algorithm <ALGO>`  | `lzma2`                           | Algorithm for
+ output SBK: `lzma2` or `zstd`      |
+ .
+ When converting SBK → other formats, files are reconstructed in memory and
+ streamed into the output archive with no temporary directory. When converting
+ other formats → SBK, the input archive is extracted to a temporary directory
+ and then compressed with the same pipeline as `sbk compress`.
+ .
+ ### Verify integrity
+ .
+ ```bash
+ sbk verify <file.sbk>
+ ```
+ .
+ Checks xxHash32 checksums of all frames.
+ .
+ ## SBK format
+ .
+ An `.sbk` file consists of:
+ .
+ 1. **Header** (79 bytes) — magic `SBK!V1\r\n`, file counts, offsets, xxHash32
+ header checksum
+ 2. **Data blocks** — four solid streams (one per file group: MCA, NBT, JSON,
+ RAW), compressed with LZMA2 or Zstd as selected at compress time
+ 3. **Frame directory** — per-frame offsets, sizes, and xxHash32 checksums
+ 4. **Index block** — sorted file manifest, compressed with the same algorithm
+ as the data blocks
+ .
+ All integers are little-endian. Frame size is 16 MiB uncompressed. See
+ [SPEC.md](SPEC.md) for the full format specification.
+Homepage: https://github.com/ChaoticTrials/sbk
+
+Package: sbk
+Priority: optional
 Installed-Size: 3687
 Maintainer: MelanX
 Architecture: amd64
