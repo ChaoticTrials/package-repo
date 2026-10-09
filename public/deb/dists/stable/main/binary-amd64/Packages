@@ -612,6 +612,22 @@ Homepage: https://github.com/ChaoticTrials/sbk
 
 Package: sbk-gui
 Priority: optional
+Installed-Size: 13302
+Maintainer: MelanX
+Architecture: amd64
+Version: 0.2.1
+Depends: sbk, libwebkit2gtk-4.1-0, libgtk-3-0
+Filename: pool/main/s/sbk-gui/SBK.GUI_0.2.1_amd64.deb
+Size: 5182242
+MD5sum: 7ecca03b87e8e95a7ae7459197b967f6
+SHA1: 6513d6dd07c9c08ff2d291390d6b6f0323d70093
+SHA256: c5ce53f07773734e42c563565197297fb5d355462d48e7d1130f57ed170ff014
+SHA512: 9316a89264b8e2647ae479c3707f18338eef72ad7f9d2e3f4b9056bde323209bb75a64d13061bed39ac08773bac5632528eff2ef4d8b7cffca0aee92aabf5414
+Description: SBK archive browser
+ (none)
+
+Package: sbk-gui
+Priority: optional
 Installed-Size: 12691
 Maintainer: MelanX
 Architecture: amd64
