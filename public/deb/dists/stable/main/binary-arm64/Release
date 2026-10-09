@@ -1,5 +1,5 @@
-Origin: . stable
-Label: . stable
+Origin: deb stable
+Label: deb stable
 Archive: stable
 Suite: stable
 Architecture: arm64
