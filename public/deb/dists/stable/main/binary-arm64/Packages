@@ -1,6 +1,30 @@
 Package: ephervex
 Priority: optional
 Section: games
+Installed-Size: 135636
+Maintainer: ChaoticTrials <noreply@chaotictrials.de>
+Architecture: arm64
+Version: 1.1.0
+Depends: libc6 (>= 2.35), libfontconfig1 (>= 2.12.6), libgcc-s1 (>= 4.2)
+Filename: pool/main/e/ephervex/ephervex_1.1.0_arm64.deb
+Size: 33225096
+MD5sum: 586171fe2c488b37205e90b25b2bb6d7
+SHA1: d457ab2cc77d7d8b1ca0a327dbf56d8169ce4168
+SHA256: 9786eb023d21567c0c5806b1aa2ad032d0190d324058e423bf7d770df0f51f6c
+SHA512: 861f90298292d9500706e0b57df237cfa83f231da4d8d78f97a4f7546a71422a244c4db2c55562652038daaf70ea7bcd8fc15104eaf4824b6af4fe862001b54f
+Description: Disposable Minecraft instances for mod development
+ Ephervex is a Linux-first Minecraft launcher and developer tool for
+ short-lived bug-reproduction environments. It imports a Modrinth, CurseForge,
+ or Prism Launcher pack, creates the instance in temporary storage, launches
+ the game, and keeps the logs and crash reports afterwards.
+ .
+ This package installs both the desktop application and the ephervex
+ command-line interface.
+Homepage: https://github.com/ChaoticTrials/Ephervex
+
+Package: ephervex
+Priority: optional
+Section: games
 Installed-Size: 133720
 Maintainer: ChaoticTrials <noreply@chaotictrials.de>
 Architecture: arm64
